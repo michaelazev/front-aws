@@ -1,0 +1,240 @@
+
+.barra-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 50px 20px;
+    background-color: #CDCDCD;
+    position: relative;
+    border-radius: 15px;
+}
+
+.barra-menu .logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-left: -20px;
+}
+
+
+.profile-page {
+    display: flex;
+    background: black;
+    min-height: 100vh;
+    font-family: 'Inter', Arial, sans-serif;
+}
+
+.profile-sidebar {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 16px #0001;
+    padding: 32px 24px;
+    width: 320px;
+    margin: 32px 0 32px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-pic {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 16px;
+}
+
+.profile-header {
+    color: black
+}
+
+.stats {
+    display: flex;
+    gap: 16px;
+    margin: 16px 0;
+    color: black;
+    font-size: 16px;
+}
+
+.stats b {
+    color: #222;
+    font-size: 18px;
+    margin-right: 4px;
+}
+
+.share-link {
+    background: none;
+    border: none;
+    color: #1b4956;
+    font-size: 15px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    justify-content: center;
+    text-align: center;
+}
+
+.follow-button {
+    background: #39b9dc;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 0;
+    width: 100%;
+    font-weight: 600;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.follow-button:hover {
+    background: #2d0ca4;
+}
+
+.section {
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.section h3 {
+    color: #6c6c80;
+    font-size: 15px;
+    margin-bottom: 6px;
+    font-weight: 600;   
+}
+
+.sobre-texto {
+    text-align: center;
+    color: #222;
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tag {
+    background: #f3f0ff;
+    color: #61dafb;
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.tag.musculacao { background: #e3eaff; color: #6fda86; }
+.tag.danca { background: #e3eaff; color: #7c5fe6; }
+.tag.instrutor { background: #ffe3e3; color: #e57373; }
+.tag.professor { background: #e3eaff; color: #e5b800; }
+.tag.area { background: #e3eaff; color: #7c5fe6; }
+
+.contact-button {
+    background: #39b9dc;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 0;
+    width: 100%;
+    font-weight: 600;
+    margin-bottom: 16px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.contact-button:hover {
+    background: #2d0ca4;
+}
+
+.socials {
+    display: flex;
+    gap: 16px;
+    font-size: 22px;
+    color: #a28ae5;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.profile-main {
+    flex: 1;
+    margin: 32px 32px 32px 24px;
+    background: none;
+}
+
+.profile-main h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 24px;
+}
+
+.profile-main h3 .active {
+    color: #61dafb;
+}
+
+.project-gallery {
+    display: flex;
+    gap: 32px;
+}
+
+.project-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 16px #0001;
+    padding: 0 0 12px 0;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.project-card img {
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    object-fit: cover;
+}
+
+.project-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    margin-top: 8px;
+    color: #6c6c80;
+    font-size: 15px;
+}
+
+.project-info svg {
+    color: #a28ae5;
+    cursor: pointer;
+}
+
+.add-project {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 16px #0001;
+    width: 200px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2d0ca4;
+    font-size: 20px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    margin: 0;
+    padding: 0;
+}
+
+.add-project:hover {
+    background: #2d0ca4;
+    color: #fff;
+}
