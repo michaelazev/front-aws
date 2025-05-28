@@ -28,7 +28,7 @@ function New_gym() {
         e.preventDefault();
         const userId = localStorage.getItem("user_id");
         try {
-            const response = await fetch("https://tecfit-back.vercel.app/api/data/gym", {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/data/gym`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

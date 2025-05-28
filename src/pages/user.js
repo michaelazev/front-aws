@@ -18,31 +18,35 @@ function EditGymPopup({ academia, onClose, onSave }) {
     };
 
     const handleSubmit = async (e) => {
-    e.preventDefault();
-    const userId = localStorage.getItem("user_id"); // Adicionado
-    try {
-        const response = await fetch(`https://tecfit-back.vercel.app/api/data/gym/${academia.gym_id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                ...form,
-                user_responsible: userId // Incluído no corpo da requisição
-            })
-        });
-        if (response.ok) {
-            alert("Academia atualizada!");
-            const updated = await response.json();
-            onSave(updated);
-            onClose();
-        } else {
-            alert("Erro ao atualizar academia.");
+        e.preventDefault();
+        const userId = localStorage.getItem("user_id");
+        const token = localStorage.getItem("token");
+        
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/data/gym/${academia.gym_id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    ...form,
+                    user_responsible: userId
+                })
+            });
+            
+            if (response.ok) {
+                alert("Academia atualizada!");
+                const updated = await response.json();
+                onSave(updated);
+                onClose();
+            } else {
+                alert("Erro ao atualizar academia.");
+            }
+        } catch (error) {
+            alert("Erro ao conectar com o servidor.");
         }
-    } catch (error) {
-        alert("Erro ao conectar com o servidor.");
-    }
-};
+    };
 
     return (
         <div className="popup-overlay">
@@ -169,14 +173,32 @@ function User() {
         const token = localStorage.getItem("token");
         if (!token) {
             navigate("/login");
+            return;
         }
+
         const nomeSalvo = localStorage.getItem("nome");
         if (nomeSalvo) setNome(nomeSalvo);
 
-        fetch("https://tecfit-back.vercel.app/api/data/gym")
-            .then((res) => res.json())
-            .then((data) => setAcademias(data))
-            .catch(() => setAcademias([]));
+        const fetchGyms = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/data/gym`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    setAcademias(data);
+                } else {
+                    console.error("Erro ao buscar academias");
+                }
+            } catch (error) {
+                console.error("Erro na requisição:", error);
+            }
+        };
+
+        fetchGyms();
     }, [navigate]);
 
     const toggleMenu = () => {
@@ -194,6 +216,27 @@ function User() {
 
     const handleSaveEdit = (updatedAcademia) => {
         setAcademias(academias.map(a => a.gym_id === updatedAcademia.gym_id ? updatedAcademia : a));
+    };
+
+    const handleDeleteGym = async (gymId) => {
+        const token = localStorage.getItem("token");
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/data/gym/${gymId}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                setAcademias(academias.filter((a) => a.gym_id !== gymId));
+                alert("Academia deletada com sucesso!");
+            } else {
+                alert("Erro ao deletar academia.");
+            }
+        } catch (err) {
+            alert("Erro ao conectar com o servidor.");
+        }
     };
 
     return (
@@ -281,43 +324,21 @@ function User() {
                         <span className="active">ADICIONE SUA ACADEMIA AQUI</span>
                     </h3>
                     <div className="project-gallery">
-                        {academias.map((academia, idx) => (
-                            <div className="project-card" key={idx}>
+                        {academias.map((academia) => (
+                            <div className="project-card" key={academia.gym_id}>
                                 <img src={academia.imagem || "/img/acad3.jpg"} alt={academia.name} />
                                 <div className="project-info">
                                     <span>{academia.name}</span>
-                                    <span
-                                        style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "2px",
-                                            height: "100%",
-                                        }}
-                                    >
+                                    <span className="action-icons">
                                         <FaEdit
-                                            style={{ marginUp: "0px", verticalAlign: "middle", cursor: "pointer" }}
+                                            className="edit-icon"
                                             title="Editar academia"
                                             onClick={() => handleEditGym(academia)}
                                         />
                                         <FaTrash
-                                            style={{
-                                                cursor: "pointer",
-                                                color: "#e74c3c",
-                                                marginLeft: "4px",
-                                                verticalAlign: "middle"
-                                            }}
+                                            className="delete-icon"
                                             title="Deletar academia"
-                                            onClick={async () => {
-                                                try {
-                                                    await fetch(`https://tecfit-back.vercel.app/api/data/gym/${academia.gym_id}`, {
-                                                        method: "DELETE",
-                                                    });
-                                                    setAcademias(academias.filter((a) => a.gym_id !== academia.gym_id));
-                                                    alert("Academia deletada com sucesso!");
-                                                } catch (err) {
-                                                    alert("Erro ao deletar academia.");
-                                                }
-                                            }}
+                                            onClick={() => handleDeleteGym(academia.gym_id)}
                                         />
                                     </span>
                                 </div>

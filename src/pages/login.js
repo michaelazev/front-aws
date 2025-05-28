@@ -38,7 +38,7 @@ function Login() {
             password: senha
         };
 
-        fetch("http://localhost:8080/auth/register", {
+        fetch(`${process.env.REACT_APP_API_URL}/auth/register`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ function Login() {
 
     // Função para buscar o user_id após login, caso não venha no retorno do login
     const fetchUserId = (email, token) => {
-    fetch(`https://tecfit-back.vercel.app/api/data/users`, {
+    fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
         method: "GET",
         headers: {
             'Authorization': `Bearer ${token}`,
