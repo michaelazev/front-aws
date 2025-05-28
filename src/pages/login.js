@@ -24,55 +24,43 @@ function Login() {
         }
     }, [navigate]);
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
+const handleSubmit = (event) => {
+    event.preventDefault();
 
-        if (senha !== confirmarSenha) {
-            setCadastroErrorMessage("As senhas não coincidem!");
-            return;
-        }
+    if (senha !== confirmarSenha) {
+        setCadastroErrorMessage("As senhas não coincidem!");
+        return;
+    }
 
-        const usuario = {
-            username: nome,
-            email: email,
-            password: senha
-        };
-
-        fetch(`${process.env.REACT_APP_API_URL}/auth/register`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(usuario)
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error('Erro ao registrar usuário');
-                }
-                return response.json();
-            })
-            .then((data) => {
-                setNome('');
-                setEmail('');
-                setSenha('');
-                setConfirmarSenha('');
-                setCadastroErrorMessage("");
-                setIsOpen(true);
-
-                localStorage.setItem('user', JSON.stringify({
-                    username: usuario.username,
-                    email: usuario.email
-                }));
-
-                localStorage.setItem('nome', usuario.username);
-
-                console.log('Cadastro realizado com sucesso:', data);
-            })
-            .catch((error) => {
-                console.error('Erro ao registrar usuário:', error);
-            });
+    const usuario = {
+        username: nome,
+        email: email,
+        password: senha
     };
+
+    fetch(`${process.env.REACT_APP_API_URL}/auth/register`, {
+        method: "POST",
+        mode: 'cors', // Adicione esta linha
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(usuario)
+    })
+    .then((response) => {
+        if (!response.ok) {
+            throw new Error('Erro ao registrar usuário');
+        }
+        return response.json();
+    })
+    .then((data) => {
+        // ... resto do código
+    })
+    .catch((error) => {
+        console.error('Erro ao registrar usuário:', error);
+        setCadastroErrorMessage("Erro ao conectar com o servidor");
+    });
+};
 
     useEffect(() => {
         const card = cardRef.current;
