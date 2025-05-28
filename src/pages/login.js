@@ -1,4 +1,5 @@
 import "./login.css";
+import api from '../utils/api';
 import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,53 +17,15 @@ function Login() {
     const [cadastroErrorMessage, setCadastroErrorMessage] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (token) {
             navigate("/user");
         }
-    }, [navigate]);
 
-const handleSubmit = (event) => {
-    event.preventDefault();
-
-    if (senha !== confirmarSenha) {
-        setCadastroErrorMessage("As senhas não coincidem!");
-        return;
-    }
-
-    const usuario = {
-        username: nome,
-        email: email,
-        password: senha
-    };
-
-    fetch(`${process.env.REACT_APP_API_URL}/auth/register`, {
-        method: "POST",
-        mode: 'cors', // Adicione esta linha
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify(usuario)
-    })
-    .then((response) => {
-        if (!response.ok) {
-            throw new Error('Erro ao registrar usuário');
-        }
-        return response.json();
-    })
-    .then((data) => {
-        // ... resto do código
-    })
-    .catch((error) => {
-        console.error('Erro ao registrar usuário:', error);
-        setCadastroErrorMessage("Erro ao conectar com o servidor");
-    });
-};
-
-    useEffect(() => {
+        // Configura animação do card
         const card = cardRef.current;
         const loginButton = loginButtonRef.current;
         const cadastroButton = cadastroButtonRef.current;
@@ -76,82 +39,87 @@ const handleSubmit = (event) => {
             card.classList.remove("loginActive");
             card.classList.add("cadastroActive");
         };
-    }, []);
 
-    // Função para buscar o user_id após login, caso não venha no retorno do login
-    const fetchUserId = (email, token) => {
-    fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
-        method: "GET",
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(res => res.json())
-    .then(userData => {
-        let user = userData;
-        // Se vier um array, procura pelo e-mail
-        if (Array.isArray(userData)) {
-            user = userData.find(u => u.Email === email);
-        }
-        if (user && (user.UserId || user._id)) {
-            localStorage.setItem('user_id', user.UserId || user._id);
-        }
-        if (user && (user.Username || user.username)) {
-            localStorage.setItem('nome', user.Username || user.username);
-        }
-        navigate('/user');
-    })
-    .catch(err => {
-        console.error('Erro ao buscar UserId:', err);
-        navigate('/user');
-    });
-};
-
-    const handleLogin = (e) => {
-        e.preventDefault();
-        const usuario = {
-            email: email,
-            password: senha
+        return () => {
+            // Cleanup
+            loginButton.onclick = null;
+            cadastroButton.onclick = null;
         };
+    }, [navigate]);
 
-        fetch("http://localhost:8080/auth/login", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(usuario)
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    setErrorMessage("Credenciais inválidas!");
-                    throw new Error('Erro ao fazer login');
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log('Login realizado com sucesso:', data);
-                setErrorMessage("");
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        setIsLoading(true);
 
-                localStorage.setItem('user', JSON.stringify(data.user));
-                localStorage.setItem('token', data.token);
+        if (senha !== confirmarSenha) {
+            setCadastroErrorMessage("As senhas não coincidem!");
+            setIsLoading(false);
+            return;
+        }
 
-                // Salva o id do usuário no localStorage para uso futuro
-                if (data.user && (data.user.UserId || data.user._id)) {
-                    localStorage.setItem('user_id', data.user.UserId || data.user._id);
-                    if (data.user.username) {
-                        localStorage.setItem('nome', data.user.username);
-                    }
-                    navigate('/user');
-                } else {
-                    // Se não vier o id, busca pelo e-mail
-                    fetchUserId(email, data.token);
-                }
-            })
-            .catch((error) => {
-                console.error('Erro ao fazer login:', error);
+        try {
+            const response = await api.post('/auth/register', {
+                username: nome,
+                email: email,
+                password: senha
             });
+
+            if (response.data) {
+                setIsOpen(true);
+                setCadastroErrorMessage("");
+                // Muda para a aba de login após cadastro
+                cardRef.current.classList.remove("cadastroActive");
+                cardRef.current.classList.add("loginActive");
+                // Limpa os campos
+                setNome("");
+                setEmail("");
+                setSenha("");
+                setConfirmarSenha("");
+            }
+        } catch (error) {
+            console.error('Erro ao registrar usuário:', error);
+            if (error.response) {
+                // Trata erros específicos do backend
+                if (error.response.status === 409) {
+                    setCadastroErrorMessage("Email ou nome de usuário já cadastrado!");
+                } else {
+                    setCadastroErrorMessage("Erro ao registrar usuário");
+                }
+            } else {
+                setCadastroErrorMessage("Erro ao conectar com o servidor");
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setErrorMessage("");
+
+        try {
+            const response = await api.post('/auth/login', {
+                email: email,
+                password: senha
+            });
+
+            const { token, user } = response.data;
+            
+            // Armazena os dados do usuário
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('user_id', user._id);
+            localStorage.setItem('nome', user.username);
+
+            // Redireciona para a página do usuário
+            navigate('/user');
+        } catch (error) {
+            console.error('Erro ao fazer login:', error);
+            setErrorMessage("Credenciais inválidas!");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -160,20 +128,27 @@ const handleSubmit = (event) => {
                 <div className="esquerda">
                     <div className="formLogin">
                         <h2>Fazer Login</h2>
-                        <form>
+                        <form onSubmit={handleLogin}>
                             <input
                                 type="email"
                                 placeholder="E-mail"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                required
                             />
                             <input
                                 type="password"
                                 placeholder="Senha"
                                 value={senha}
                                 onChange={(e) => setSenha(e.target.value)}
+                                required
                             />
-                            <button type="submit" onClick={handleLogin}>Entrar</button>
+                            <button 
+                                type="submit" 
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Carregando...' : 'Entrar'}
+                            </button>
                             {errorMessage && <div className="errorMessage">{errorMessage}</div>}
                         </form>
                     </div>
@@ -192,32 +167,43 @@ const handleSubmit = (event) => {
                                 placeholder="Nome"
                                 value={nome}
                                 onChange={(e) => setNome(e.target.value)}
+                                required
+                                minLength="3"
                             />
                             <input
                                 type="email"
                                 placeholder="E-mail"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                required
                             />
                             <input
                                 type="password"
                                 placeholder="Senha"
                                 value={senha}
                                 onChange={(e) => setSenha(e.target.value)}
+                                required
+                                minLength="6"
                             />
                             <input
                                 type="password"
                                 placeholder="Confirme a sua senha"
                                 value={confirmarSenha}
                                 onChange={(e) => setConfirmarSenha(e.target.value)}
+                                required
                             />
-                            <button type="submit">Cadastrar</button>
+                            <button 
+                                type="submit" 
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Registrando...' : 'Cadastrar'}
+                            </button>
                             {cadastroErrorMessage && (
                                 <div className="errorMessage">{cadastroErrorMessage}</div>
                             )}
                             {isOpen && (
                                 <div className="registerComplete">
-                                    Conta criada com sucesso!
+                                    Conta criada com sucesso! Faça login.
                                 </div>
                             )}
                         </form>

@@ -2,6 +2,7 @@ import "./user.css";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaInstagram, FaLinkedin, FaShareAlt, FaEdit, FaTrash } from "react-icons/fa";
+import api from '../utils/api';
 
 // Popup de edição de academia
 function EditGymPopup({ academia, onClose, onSave }) {
@@ -13,38 +14,27 @@ function EditGymPopup({ academia, onClose, onSave }) {
         phone: academia.phone || ""
     });
 
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const userId = localStorage.getItem("user_id");
-        const token = localStorage.getItem("token");
+        setIsLoading(true);
+        setError("");
         
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/data/gym/${academia.gym_id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    ...form,
-                    user_responsible: userId
-                })
-            });
-            
-            if (response.ok) {
-                alert("Academia atualizada!");
-                const updated = await response.json();
-                onSave(updated);
-                onClose();
-            } else {
-                alert("Erro ao atualizar academia.");
-            }
+            const response = await api.put(`/api/gym/${academia._id}`, form);
+            onSave(response.data.gym);
+            onClose();
         } catch (error) {
-            alert("Erro ao conectar com o servidor.");
+            setError(error.response?.data?.error || "Erro ao atualizar academia");
+            console.error('Erro ao atualizar academia:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -53,6 +43,7 @@ function EditGymPopup({ academia, onClose, onSave }) {
             <div className="popup-content">
                 <button className="close-btn" onClick={onClose}>X</button>
                 <h2>Editar Academia</h2>
+                {error && <div className="error-message">{error}</div>}
                 <form onSubmit={handleSubmit} className="edit-gym-form">
                     <div>
                         <label>Nome</label>
@@ -62,6 +53,7 @@ function EditGymPopup({ academia, onClose, onSave }) {
                             value={form.name}
                             onChange={handleChange}
                             required
+                            minLength="3"
                         />
                     </div>
                     <div>
@@ -104,7 +96,9 @@ function EditGymPopup({ academia, onClose, onSave }) {
                             required
                         />
                     </div>
-                    <button type="submit">Salvar</button>
+                    <button type="submit" disabled={isLoading}>
+                        {isLoading ? 'Salvando...' : 'Salvar'}
+                    </button>
                 </form>
             </div>
             <style>{`
@@ -133,6 +127,11 @@ function EditGymPopup({ academia, onClose, onSave }) {
                     font-size: 20px;
                     cursor: pointer;
                 }
+                .error-message {
+                    color: #ff3333;
+                    margin-bottom: 12px;
+                    text-align: center;
+                }
                 .edit-gym-form div {
                     margin-bottom: 12px;
                 }
@@ -157,6 +156,10 @@ function EditGymPopup({ academia, onClose, onSave }) {
                     border-radius: 4px;
                     cursor: pointer;
                 }
+                .edit-gym-form button[type="submit"]:disabled {
+                    background: #cccccc;
+                    cursor: not-allowed;
+                }
             `}</style>
         </div>
     );
@@ -167,39 +170,36 @@ function User() {
     const [nome, setNome] = useState("");
     const [academias, setAcademias] = useState([]);
     const [editAcademia, setEditAcademia] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (!token) {
+        const userData = JSON.parse(localStorage.getItem("user"));
+        
+        if (!token || !userData) {
             navigate("/login");
             return;
         }
 
-        const nomeSalvo = localStorage.getItem("nome");
-        if (nomeSalvo) setNome(nomeSalvo);
-
-        const fetchGyms = async () => {
-            try {
-                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/data/gym`, {
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    setAcademias(data);
-                } else {
-                    console.error("Erro ao buscar academias");
-                }
-            } catch (error) {
-                console.error("Erro na requisição:", error);
-            }
-        };
-
+        setNome(userData.username || "Usuário");
         fetchGyms();
     }, [navigate]);
+
+    const fetchGyms = async () => {
+        setIsLoading(true);
+        setError("");
+        try {
+            const response = await api.get('/api/gym');
+            setAcademias(response.data);
+        } catch (error) {
+            setError("Erro ao carregar academias");
+            console.error("Erro ao buscar academias:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -215,27 +215,20 @@ function User() {
     };
 
     const handleSaveEdit = (updatedAcademia) => {
-        setAcademias(academias.map(a => a.gym_id === updatedAcademia.gym_id ? updatedAcademia : a));
+        setAcademias(academias.map(a => a._id === updatedAcademia._id ? updatedAcademia : a));
     };
 
     const handleDeleteGym = async (gymId) => {
-        const token = localStorage.getItem("token");
+        if (!window.confirm("Tem certeza que deseja excluir esta academia?")) {
+            return;
+        }
+
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/data/gym/${gymId}`, {
-                method: "DELETE",
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            });
-            
-            if (response.ok) {
-                setAcademias(academias.filter((a) => a.gym_id !== gymId));
-                alert("Academia deletada com sucesso!");
-            } else {
-                alert("Erro ao deletar academia.");
-            }
-        } catch (err) {
-            alert("Erro ao conectar com o servidor.");
+            await api.delete(`/api/gym/${gymId}`);
+            setAcademias(academias.filter(a => a._id !== gymId));
+        } catch (error) {
+            alert(error.response?.data?.error || "Erro ao excluir academia");
+            console.error("Erro ao deletar academia:", error);
         }
     };
 
@@ -251,7 +244,7 @@ function User() {
                 <span className="Tec-icon"></span>
             </button>
 
-            <div className={`menu ${menuOpen ? "active" : ""}`}>
+<div className={`menu${menuOpen ? " active" : ""}`}>
                 <nav>
                     <a href="/" style={{ animationDelay: "0.2s" }}>
                         <h6>Inicio</h6>
@@ -276,7 +269,7 @@ function User() {
                         alt="Profile"
                     />
                     <div className="profile-header">
-                        <h3>{nome || "Usuário"}</h3>
+                        <h3>{nome}</h3>
                     </div>
                     <div className="stats">
                         <span><b>{academias.length}</b> Projetos</span>
@@ -292,9 +285,7 @@ function User() {
                         <h3>Sobre</h3>
                     </div>
                     <div className="sobre-texto">
-                        <p>
-                            Venha conhecer a nossa academia!
-                        </p>
+                        <p>Venha conhecer a nossa academia!</p>
                     </div>
 
                     <div className="section">
@@ -323,33 +314,47 @@ function User() {
                     <h3>
                         <span className="active">ADICIONE SUA ACADEMIA AQUI</span>
                     </h3>
-                    <div className="project-gallery">
-                        {academias.map((academia) => (
-                            <div className="project-card" key={academia.gym_id}>
-                                <img src={academia.imagem || "/img/acad3.jpg"} alt={academia.name} />
-                                <div className="project-info">
-                                    <span>{academia.name}</span>
-                                    <span className="action-icons">
-                                        <FaEdit
-                                            className="edit-icon"
-                                            title="Editar academia"
-                                            onClick={() => handleEditGym(academia)}
-                                        />
-                                        <FaTrash
-                                            className="delete-icon"
-                                            title="Deletar academia"
-                                            onClick={() => handleDeleteGym(academia.gym_id)}
-                                        />
-                                    </span>
+                    
+                    {error && <div className="error-message">{error}</div>}
+                    
+                    {isLoading ? (
+                        <div className="loading">Carregando academias...</div>
+                    ) : (
+                        <div className="project-gallery">
+                            {academias.length === 0 ? (
+                                <div className="no-gyms">
+                                    <p>Você ainda não possui academias cadastradas</p>
                                 </div>
-                            </div>
-                        ))}
-                        <button className="add-project" onClick={handleAddGym}>
-                            + Add Academia
-                        </button>
-                    </div>
+                            ) : (
+                                academias.map((academia) => (
+                                    <div className="project-card" key={academia._id}>
+                                        <img src={academia.imagem || "/img/acad3.jpg"} alt={academia.name} />
+                                        <div className="project-info">
+                                            <span>{academia.name}</span>
+                                            <span className="action-icons">
+                                                <FaEdit
+                                                    className="edit-icon"
+                                                    title="Editar academia"
+                                                    onClick={() => handleEditGym(academia)}
+                                                />
+                                                <FaTrash
+                                                    className="delete-icon"
+                                                    title="Deletar academia"
+                                                    onClick={() => handleDeleteGym(academia._id)}
+                                                />
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                            <button className="add-project" onClick={handleAddGym}>
+                                + Add Academia
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
+            
             {editAcademia && (
                 <EditGymPopup
                     academia={editAcademia}
