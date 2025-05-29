@@ -1,7 +1,7 @@
 import "./login.css";
 import api from '../utils/api';
 import React, { useRef, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 function Login() {
     const cardRef = useRef(null);
@@ -124,6 +124,13 @@ function Login() {
 
     return (
         <section className="conteinerPai">
+            {/* Botão para voltar à página inicial */}
+            <Link to="/" className="back-to-home">
+                <button className="back-button">
+                    <span className="arrow">←</span> Voltar para Início
+                </button>
+            </Link>
+
             <div className="card loginActive" ref={cardRef}>
                 <div className="esquerda">
                     <div className="formLogin">
@@ -146,6 +153,7 @@ function Login() {
                             <button 
                                 type="submit" 
                                 disabled={isLoading}
+                                className={isLoading ? 'loading' : ''}
                             >
                                 {isLoading ? 'Carregando...' : 'Entrar'}
                             </button>
@@ -195,6 +203,7 @@ function Login() {
                             <button 
                                 type="submit" 
                                 disabled={isLoading}
+                                className={isLoading ? 'loading' : ''}
                             >
                                 {isLoading ? 'Registrando...' : 'Cadastrar'}
                             </button>

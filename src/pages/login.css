@@ -1,25 +1,25 @@
-*{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-weight: 400;
 }
 
-body{
+body {
     color: white;
 }
 
-form{
+form {
     display: flex;
     flex-direction: column;
     gap: 16px;
-
-    button{
-        background: linear-gradient(90deg, #968FF8 0%, #F1D3F9 100%);
-    }
 }
 
-input, button{
+form button {
+    background: linear-gradient(90deg, #968FF8 0%, #F1D3F9 100%);
+}
+
+input, button {
     padding: 12px 20px;
     border-radius: 12px;
     border: none;
@@ -28,16 +28,16 @@ input, button{
     width: 400px;
 }
 
-input{
+input {
     background-color: rgba(255 255 255 / .2);
     color: rgba(255 255 255 / .9);
 }
 
-input::placeholder{
+input::placeholder {
     color: rgba(255 255 255 / .5);
 }
 
-button{
+button {
     margin-top: 8px;
     font-weight: 700;
     color: rgba(0 0 0 / .8);
@@ -46,17 +46,17 @@ button{
     transition: all 0.3s;
 }
 
-button:hover{
+button:hover {
     transform: translateY(-2px);
 }
 
-p{
+p {
     margin-bottom: 32px;
     width: 400px;
     text-align: center;
 }
 
-h2{
+h2 {
     margin-bottom: 32px;
     font-size: 50px;
     text-align: center;
@@ -69,16 +69,18 @@ h2{
     font-style: normal;
     font-weight: 300;
 }
-.conteinerPai{
+
+.conteinerPai {
     width: 100%;
     height: 100vh;
     background-color: black;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
 
-.card{
+.card {
     width: 80%;
     height: 92vh;
     background-color: rgba(255 255 255 / .10);
@@ -91,7 +93,7 @@ h2{
     overflow: hidden;
 }
 
-.esquerda, .direita{
+.esquerda, .direita {
     width: 50%;
     height: 100%;
     display: flex;
@@ -101,29 +103,29 @@ h2{
     z-index: 1;
 }
 
-.formLogin, .facaLogin , .formCadastro, .facaCadastro{
+.formLogin, .facaLogin, .formCadastro, .facaCadastro {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-.facaLogin, .facaCadastro{
+.facaLogin, .facaCadastro {
     position: absolute;
-
-    h2, p{
-        color: rgba(0, 0, 0, 0.8);
-    }
-
-    button{
-        background-color: rgba(255 255 255 / .2);
-        border: 2px solid rgba(0 0 0 / .8);
-    }
 }
 
-/*BACKGROUND MOVEL*/
+.facaLogin h2, .facaLogin p,
+.facaCadastro h2, .facaCadastro p {
+    color: rgba(0, 0, 0, 0.8);
+}
 
-.card::after{
+.facaLogin button, .facaCadastro button {
+    background-color: rgba(255 255 255 / .2);
+    border: 2px solid rgba(0 0 0 / .8);
+}
+
+/* BACKGROUND MOVEL */
+.card::after {
     width: 100%;
     height: 100%;
     content: "";
@@ -136,84 +138,79 @@ h2{
     z-index: 0;
 }
 
-/*LOGIN ACTIVE.*/
-
-.card.loginActive .facaLogin{
+/* LOGIN ACTIVE */
+.card.loginActive .facaLogin {
     opacity: 0;
     pointer-events: none;
 }
 
-.card.loginActive .facaCadastro{
+.card.loginActive .facaCadastro {
     transform: translateX(0%);
     transition: all 0.3s 0;
     opacity: 1;
 }
 
-.card.loginActive .formLogin{
+.card.loginActive .formLogin {
     transition: all 0.3s 0;
     opacity: 1;
 }
 
-.card.loginActive .formCadastro{
+.card.loginActive .formCadastro {
     opacity: 0;
     pointer-events: none;
 }
 
-.card.loginActive::after{
+.card.loginActive::after {
     transform: translateX(50%);
 }
 
-/*CADASTRO ACTIVE.*/
-
-.card.cadastroActive .facaCadastro{
+/* CADASTRO ACTIVE */
+.card.cadastroActive .facaCadastro {
     opacity: 0;
     pointer-events: none;
 }
 
-.card.cadastroActive .formLogin{
+.card.cadastroActive .formLogin {
     opacity: 0;
     pointer-events: none;
 }
 
-.card.cadastroActive::after{
+.card.cadastroActive::after {
     transform: translateX(-50%);
 }
 
-.card.cadastroActive .facaLogin{
+.card.cadastroActive .facaLogin {
     transform: translateX(0%);
     transition: all 0.3s 0;
     opacity: 1;
 }
 
-.card.cadastroActive .formCadastro{
+.card.cadastroActive .formCadastro {
     transition: all 0.3s 0;
     opacity: 1;
 }
 
-/*ANIMACAO*/
-
-.card::after{
+/* ANIMACAO */
+.card::after {
     transition: all 0.5s;
 }
 
-.facaCadastro{
+.facaCadastro {
     transform: translateX(200%);
     transition: all 0.3s 0;
 }
 
-.formLogin{
+.formLogin {
     opacity: 0;
     transition: all 0.3s 0;
 }
 
-
-
-.facaLogin{
+.facaLogin {
     transform: translateX(-200%);
     transition: all 0.3s 0;
 }
 
-.formCadastro{
+.formCadastro {
     opacity: 0;
     transition: all 0.3s 0;
 }
@@ -222,4 +219,49 @@ h2{
     color: red;
     margin-top: 10px;
     font-size: 14px;
+}
+
+.registerComplete {
+    color: #2ecc71;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+/* BOTÃO VOLTAR ATUALIZADO */
+.back-to-home {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 100;
+}
+
+.back-button {
+    padding: 6px 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    backdrop-filter: blur(5px);
+}
+
+.back-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.back-button .arrow {
+    font-size: 14px;
+}
+
+/* Estilo para botões em estado de loading */
+button.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
